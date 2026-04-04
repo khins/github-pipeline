@@ -22,3 +22,21 @@ def analyze_repos(repos: list[dict]) -> dict:
             "url": most_starred.get("html_url"),
         },
     }
+
+
+def top_starred_repos(repos: list[dict], limit: int = 5) -> list[dict]:
+    """Return the top repositories sorted by stargazers_count descending."""
+    sorted_repos = sorted(
+        repos,
+        key=lambda repo: repo.get("stargazers_count", 0),
+        reverse=True,
+    )
+
+    return [
+        {
+            "name": repo.get("name"),
+            "stars": repo.get("stargazers_count", 0),
+            "url": repo.get("html_url"),
+        }
+        for repo in sorted_repos[:limit]
+    ]

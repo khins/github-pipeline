@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from src.api import fetch_user, fetch_repos
-from src.transform import analyze_repos
+from src.transform import analyze_repos, top_starred_repos
 
 app = FastAPI()
 
@@ -26,3 +26,9 @@ def get_repos(username: str):
 def get_analytics(username: str):
     repos = fetch_repos(username)
     return analyze_repos(repos)
+
+
+@app.get("/top-repos/{username}")
+def get_top_repos(username: str):
+    repos = fetch_repos(username)
+    return top_starred_repos(repos, limit=5)
