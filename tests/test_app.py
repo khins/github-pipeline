@@ -1,7 +1,15 @@
 import unittest
 from unittest.mock import patch
 
-from src.app import app, get_analytics, get_repos, get_top_repos, get_user, root
+from src.app import (
+    app,
+    get_analytics,
+    get_repos,
+    get_top_repos,
+    get_user,
+    root,
+    sync_user_data,
+)
 
 
 class TestAppFunctions(unittest.TestCase):
@@ -51,6 +59,7 @@ class TestAppFunctions(unittest.TestCase):
         self.assertIn("/repos/{username}", route_paths)
         self.assertIn("/analytics/{username}", route_paths)
         self.assertIn("/top-repos/{username}", route_paths)
+        self.assertIn("/sync/{username}", route_paths)
 
     @patch("src.app.top_starred_repos")
     @patch("src.app.fetch_repos")
@@ -66,6 +75,27 @@ class TestAppFunctions(unittest.TestCase):
         self.assertEqual(result, top_repos)
         mock_fetch_repos.assert_called_once_with("kevin")
         mock_top_starred_repos.assert_called_once_with(repos, limit=5)
+
+    @patch("src.app.upsert_user_and_repos")
+    @patch("src.app.fetch_repos")
+    @patch("src.app.fetch_user")
+    def test_sync_user_data_fetches_and_upserts(
+        self, mock_fetch_user, mock_fetch_repos, mock_upsert
+    ) -> None:
+        db = object()
+        user = {"id": 1, "login": "kevin"}
+        repos = [{"id": 10, "name": "repo-one"}]
+        sync_result = {"username": "kevin", "synced_user_id": 1, "repos_synced": 1}
+
+        mock_fetch_user.return_value = user
+        mock_fetch_repos.return_value = repos
+        mock_upsert.return_value = sync_result
+
+        result = sync_user_data("kevin", db)
+        self.assertEqual(result, sync_result)
+        mock_fetch_user.assert_called_once_with("kevin")
+        mock_fetch_repos.assert_called_once_with("kevin")
+        mock_upsert.assert_called_once_with(db, user, repos)
 
 
 if __name__ == "__main__":

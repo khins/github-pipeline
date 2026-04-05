@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16
+    container_name: github_pipeline_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: github_pipeline
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d github_pipeline"]
+      interval: 5s
+      timeout: 5s
+      retries: 8
+
+volumes:
+  postgres_data:

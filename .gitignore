@@ -19,6 +19,7 @@ Thumbs.db
 
 # Data files (optional)
 data/*.json
+*.db
 
 # Logs
 *.log
